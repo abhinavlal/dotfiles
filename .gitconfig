@@ -3,8 +3,8 @@
   autocrlf = input
 
 [user]
-  name = J Kishore kumar
-  email = justjkk@gmail.com
+	name = abhinav
+	email = abhinav@practo.com
 
 [color]
   diff = auto
@@ -19,3 +19,9 @@
 
 [branch]
   autosetuprebase = always
+[alias]
+	st = status
+	ci = commit
+	br = branch
+	df = diff
+	lg = log
