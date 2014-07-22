@@ -120,7 +120,5 @@ repeat() {
 bind '"\e[A": history-search-backward'
 bind '"\e[B": history-search-forward'
 
-#use vim keybindings
-set -o vi
 
 export PATH=~/bin/:$PATH
