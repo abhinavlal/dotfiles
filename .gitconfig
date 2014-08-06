@@ -3,7 +3,7 @@
   autocrlf = input
 
 [user]
-	name = abhinav
+	name = Abhinav Lal
 	email = abhinav@practo.com
 
 [color]
@@ -24,4 +24,12 @@
 	ci = commit
 	br = branch
 	df = diff
-	lg = log
+	lg = log --all --graph --decorate --date-order
+[push]
+	default = simple
+[diff]
+color=auto
+[merge]
+conflictstyle=diff3
+[credential]
+	helper = cache
