@@ -130,5 +130,7 @@ repeat() {
 
 export PATH=~/bin/:$PATH
 
+bind '"\e[A": history-search-backward'
+bind '"\e[B": history-search-forward'
 bind '"\[j": history-search-forward'
 bind '"\[k": history-search-forward'
