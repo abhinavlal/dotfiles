@@ -129,6 +129,7 @@ repeat() {
 }
 
 export PATH=~/bin/:$PATH
+export PATH=~/Code/flutter/bin:$PATH
 
 bind '"\e[A": history-search-backward'
 bind '"\e[B": history-search-forward'
