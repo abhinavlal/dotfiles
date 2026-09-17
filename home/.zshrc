@@ -206,6 +206,26 @@ if command -v zoxide &>/dev/null; then
   eval "$(zoxide init zsh)"
 fi
 
+# nvm: node versions — `nvm install --lts`, `nvm alias default <v>`, .nvmrc
+# nvm is a shell function, not a binary, so guard on its script instead.
+# nvm breaks under EXTENDED_GLOB (set above): `default -> lts/*` resolves to N/A.
+# So load it, and run every `nvm` call, with that option switched off.
+if [[ -s "$HOMEBREW_PREFIX/opt/nvm/nvm.sh" ]]; then
+  export NVM_DIR="$HOME/.nvm"
+  [[ -d "$NVM_DIR" ]] || mkdir -p "$NVM_DIR"
+  () { setopt local_options no_extended_glob; source "$HOMEBREW_PREFIX/opt/nvm/nvm.sh"; }
+  functions[_nvm]=$functions[nvm]
+  nvm() { setopt local_options no_extended_glob; _nvm "$@"; }
+  [[ -s "$HOMEBREW_PREFIX/opt/nvm/etc/bash_completion.d/nvm" ]] && \
+    source "$HOMEBREW_PREFIX/opt/nvm/etc/bash_completion.d/nvm"
+fi
+
+# pyenv: python versions — `pyenv install 3.13`, `pyenv global <v>`, .python-version
+if command -v pyenv &>/dev/null; then
+  export PYENV_ROOT="$HOME/.pyenv"
+  eval "$(pyenv init - zsh)"
+fi
+
 # bat theme
 export BAT_THEME="Catppuccin Mocha"
 

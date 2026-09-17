@@ -16,6 +16,7 @@ DRY_RUN=0
 WITH_BREW=0
 WITH_EXTRAS=0
 brew_failed=""
+lang_failed=""
 
 usage() {
   cat <<EOF
@@ -67,6 +68,50 @@ if (( WITH_BREW )); then
   done
 fi
 
+# ── Language defaults ─────────────────────────────────────────────────────────
+# Installs a default node (nvm) and python (pyenv) the first time. A default
+# that's already set is left alone, so re-running never switches versions.
+NODE_DEFAULT="lts/*"
+PYTHON_DEFAULT="3.13"          # pyenv resolves this to the latest 3.13.x
+export NVM_DIR="$HOME/.nvm"
+export PYENV_ROOT="$HOME/.pyenv"
+
+# Subshells: nvm.sh isn't written for `set -eu`, and neither leaks into this script.
+# Both are invoked through run(), which shellcheck can't see (SC2329).
+# shellcheck disable=SC2329
+setup_node() (
+  set +eu
+  mkdir -p "$NVM_DIR"
+  # shellcheck source=/dev/null
+  . "$(brew --prefix)/opt/nvm/nvm.sh" --no-use
+  nvm install "$NODE_DEFAULT" && nvm alias default "$NODE_DEFAULT"
+)
+# shellcheck disable=SC2329
+setup_python() (
+  pyenv install --skip-existing "$PYTHON_DEFAULT" &&
+    pyenv global "$(pyenv latest "$PYTHON_DEFAULT")"
+)
+
+if (( WITH_BREW )); then
+  if [[ -e "$NVM_DIR/alias/default" ]]; then
+    echo "ok      node default ($(<"$NVM_DIR/alias/default"))"
+  elif [[ -s "$(brew --prefix)/opt/nvm/nvm.sh" ]]; then
+    echo "node    nvm install $NODE_DEFAULT (default)"
+    run setup_node || lang_failed="$lang_failed node"
+  else
+    echo "skip    node default (nvm not installed)"
+  fi
+
+  if [[ -e "$PYENV_ROOT/version" ]]; then
+    echo "ok      python default ($(<"$PYENV_ROOT/version"))"
+  elif command -v pyenv &>/dev/null; then
+    echo "python  pyenv install $PYTHON_DEFAULT (global)"
+    run setup_python || lang_failed="$lang_failed python"
+  else
+    echo "skip    python default (pyenv not installed)"
+  fi
+fi
+
 # ── Links ─────────────────────────────────────────────────────────────────────
 linked=0 unchanged=0 backed_up=0
 
@@ -100,6 +145,9 @@ echo "$linked linked, $unchanged already linked, $backed_up backed up."
 (( linked )) && ! (( DRY_RUN )) && echo "Open a new shell (or run: exec zsh) to pick up changes."
 if [[ -n "$brew_failed" ]]; then
   echo "brew bundle reported failures in:$brew_failed — see the output above, or run ./install.sh --audit." >&2
-  exit 1
 fi
+if [[ -n "$lang_failed" ]]; then
+  echo "default version setup failed for:$lang_failed — see the output above." >&2
+fi
+[[ -z "$brew_failed$lang_failed" ]] || exit 1
 exit 0

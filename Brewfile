@@ -15,6 +15,11 @@ brew "zoxide"                    # `z <frecent dir>`
 brew "gh"                        # GitHub CLI       (.config/gh)
 brew "uv"                        # py / pt aliases
 
+# Language versions
+brew "nvm"                       # node versions    (.zshrc; .nvmrc)
+brew "pyenv"                     # python versions  (.zshrc; .python-version)
+brew "xz"                        # lzma for pyenv-built pythons
+
 # Terminal
 cask "ghostty"                           # .config/ghostty/config
 cask "font-jetbrains-mono-nerd-font"     # prompt glyphs; without it icons render as boxes

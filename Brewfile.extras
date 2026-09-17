@@ -9,7 +9,6 @@ brew "actionlint"      # GitHub Actions linter
 brew "aria2"           # segmented downloads
 brew "gemini-cli"
 brew "mas"             # Mac App Store CLI — required by the `mas` entries below
-brew "node@22"
 brew "railway"
 brew "xcodes"          # Xcode version manager (betas; release Xcode is below)
 

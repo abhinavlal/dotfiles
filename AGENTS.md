@@ -21,11 +21,15 @@ this machine" or "sync my dotfiles", follow these steps.
      prints, and give the user the matching `brew install --cask …` command
      to run in their own terminal.
 5. Run `./install.sh --brew`. Use `--extras` only if the user wants the apps.
-   Don't install Brewfile.extras without asking.
+   Don't install Brewfile.extras without asking. `--brew` also installs the
+   default node (nvm) and Python (pyenv) if none is set yet. The Python
+   build compiles from source and takes a few minutes.
 6. Verify:
    - `zsh -i -c exit` runs with no errors
    - `readlink ~/.zshrc` points into `~/.dotfiles/home/`
    - `starship --version`, `eza --version` and `bat --version` all work
+   - in a new shell, `which node` is under `~/.nvm/versions/` and
+     `which python` is `~/.pyenv/shims/python`
 7. Ask the user whether this machine needs a different git email. If it does,
    write it to `~/.gitconfig.local`, not to the tracked `.gitconfig`:
    ```

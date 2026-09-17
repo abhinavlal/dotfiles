@@ -19,6 +19,13 @@ Before it replaces an existing file, it moves that file to
 `~/.dotfiles-backup/`. You can run it again at any time. `--extras` also
 installs the apps in `Brewfile.extras`.
 
+`--brew` also sets up default language versions the first time: the latest
+node LTS with nvm, and the latest Python 3.13 with pyenv. If a default is
+already set, it's left alone. To change the versions for new machines, edit
+`NODE_DEFAULT` and `PYTHON_DEFAULT` in `install.sh`. On a machine that's
+already set up, use `nvm alias default <version>` or
+`pyenv global <version>`.
+
 ## Apps installed without Homebrew
 
 `./install.sh --audit` is read-only. For each Brewfile entry it predicts
@@ -56,7 +63,7 @@ what's already installed.
 
 | Path in repo                   | Linked to                       | What it is |
 |--------------------------------|---------------------------------|------------|
-| `home/.zshrc`                  | `~/.zshrc`                      | history, options, completion, keys, aliases, fzf/zoxide, plugins, prompt |
+| `home/.zshrc`                  | `~/.zshrc`                      | history, options, completion, keys, aliases, fzf/zoxide, nvm/pyenv, plugins, prompt |
 | `home/.zprofile`               | `~/.zprofile`                   | Homebrew shellenv, OrbStack |
 | `home/.gitconfig`              | `~/.gitconfig`                  | identity; includes `~/.gitconfig.local` |
 | `home/.config/git/ignore`      | `~/.config/git/ignore`          | global gitignore |
