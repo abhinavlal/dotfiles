@@ -2,21 +2,38 @@
 # these; install per machine as wanted.
 # Install with: brew bundle --file=Brewfile.extras   (or ./install.sh --extras)
 
+tap "netbirdio/tap"
+
 # Dev tools
 brew "actionlint"      # GitHub Actions linter
 brew "aria2"           # segmented downloads
 brew "gemini-cli"
+brew "mas"             # Mac App Store CLI — required by the `mas` entries below
 brew "node@22"
 brew "railway"
-brew "xcodes"          # Xcode version manager
+brew "xcodes"          # Xcode version manager (betas; release Xcode is below)
 
 # Apps
 cask "1password"
+cask "chatgpt"                     # includes Codex; the standalone codex-app cask is discontinued
 cask "claude"
-cask "codex-app"
+cask "cursor"
 cask "dropbox"
-cask "openlogi"
+cask "expressvpn"
+cask "google-chrome"
+cask "granola"
+cask "netbirdio/tap/netbird-ui"    # NetBird
 cask "orbstack"
+cask "raycast"
 cask "rectangle"
+cask "slack"
 cask "t3-code"
 cask "tailscale-app"
+cask "warp"                        # Warp terminal
+cask "wispr-flow"
+cask "zed"
+cask "zoom"
+
+# Mac App Store — sign in to the App Store app first
+mas "Amphetamine", id: 937984704
+mas "Xcode", id: 497799835
