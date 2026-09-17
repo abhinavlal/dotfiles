@@ -1,0 +1,7 @@
+.DS_Store
+
+# Machine-local overrides and secrets never belong here — this repo is public.
+*.local
+.npmrc
+.netrc
+hosts.yml

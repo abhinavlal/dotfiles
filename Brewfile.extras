@@ -1,0 +1,22 @@
+# Extras — other tools and apps from the main laptop. Nothing in home/ needs
+# these; install per machine as wanted.
+# Install with: brew bundle --file=Brewfile.extras   (or ./install.sh --extras)
+
+# Dev tools
+brew "actionlint"      # GitHub Actions linter
+brew "aria2"           # segmented downloads
+brew "gemini-cli"
+brew "node@22"
+brew "railway"
+brew "xcodes"          # Xcode version manager
+
+# Apps
+cask "1password"
+cask "claude"
+cask "codex-app"
+cask "dropbox"
+cask "openlogi"
+cask "orbstack"
+cask "rectangle"
+cask "t3-code"
+cask "tailscale-app"

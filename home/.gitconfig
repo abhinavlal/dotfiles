@@ -1,0 +1,7 @@
+[user]
+	name = Abhinav Lal
+	email = abhinav@practo.com
+
+# Per-machine overrides (e.g. a work vs personal email) — not tracked.
+[include]
+	path = ~/.gitconfig.local
