@@ -18,7 +18,7 @@ this machine" or "sync my dotfiles", follow these steps.
      deleting or updating any app to fix them, and don't use `--force`.
    - You can't type a password, so rows marked `[password]` would fail or
      hang. Skip them with the `HOMEBREW_BUNDLE_CASK_SKIP="…"` line the audit
-     prints, and give the user the matching `brew install --cask …` command
+     prints, and give the user the `brew install --cask --adopt …` command
      to run in their own terminal.
 5. Run `./install.sh --brew`. Use `--extras` only if the user wants the apps.
    Don't install Brewfile.extras without asking. `--brew` also installs the

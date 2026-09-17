@@ -101,6 +101,8 @@ installed_casks="$(brew list --cask -1 2>/dev/null)"
 covered_apps=""        # every .app path accounted for by some Brewfile or Homebrew entry
 n_new=0 n_adopt=0 n_brew=0 n_problem=0 n_password=0
 password_casks=""
+terminal_casks=""      # full tokens of password casks that can install once someone types it
+installer_casks=""     # password casks that run a vendor installer rather than moving an app
 
 # ── Casks ─────────────────────────────────────────────────────────────────────
 section "Casks"
@@ -140,12 +142,14 @@ while IFS='|' read -r token installed auto_updates version kind sudo apps pkgs d
     done
   fi
 
-  # Adopting runs chmod on the existing app, with sudo when the bundle isn't
-  # writable — which macOS enforces for apps installed by other means even
-  # when you own the files. Same check Homebrew makes (File#writable?).
-  if [[ -n "$present" && -d "$present" && ! -w "$present" && "$kind" == app ]]; then
+  # Adopting runs chmod on the existing app, with sudo when Homebrew decides the
+  # bundle isn't writable. That decision can't be predicted from here: Chrome
+  # and ChatGPT tested writable (-w, File#writable?) yet brew bundle still ran
+  # `sudo chmod` on them. So assume every adopted app asks for a password.
+  if [[ -n "$present" && -d "$present" && "$kind" == app ]]; then
     pw=" [password]"
   fi
+  problems_before=$n_problem
 
   if [[ -z "$present" && "$token" == */*/* ]] && ! tap_cask_trusted "$token"; then
     row "untrusted" "$name" "tap ${token%/*} isn't trusted, so Homebrew ignores it — add trusted: true to its Brewfile line$pw"
@@ -172,7 +176,12 @@ while IFS='|' read -r token installed auto_updates version kind sudo apps pkgs d
       n_problem=$((n_problem + 1))
     fi
   fi
-  [[ -n "$pw" ]] && { n_password=$((n_password + 1)); password_casks="$password_casks $name"; }
+  if [[ -n "$pw" ]]; then
+    n_password=$((n_password + 1)); password_casks="$password_casks $name"
+    # Rows to fix first would fail in a terminal too, so leave them out of the command.
+    (( n_problem == problems_before )) && terminal_casks="$terminal_casks $token"
+    [[ "$kind" == installer || "$kind" == pkg ]] && installer_casks="$installer_casks $name"
+  fi
 done < <(cask_rows ${queryable[@]+"${queryable[@]}"})
 
 for cask in ${untapped[@]+"${untapped[@]}"}; do
@@ -185,6 +194,7 @@ for cask in ${untapped[@]+"${untapped[@]}"}; do
   if tap_cask_trusted "$cask"; then
     row "new" "$name" "from tap ${cask%/*}$pw"
     n_new=$((n_new + 1))
+    [[ -n "$pw" ]] && terminal_casks="$terminal_casks $cask"
   else
     row "untrusted" "$name" "tap ${cask%/*} isn't trusted, so Homebrew ignores it — add trusted: true to its Brewfile line$pw"
     n_problem=$((n_problem + 1))
@@ -308,5 +318,18 @@ if (( n_password )); then
   echo "  Asks for an admin password:$password_casks"
   echo "  Without a terminal (e.g. an agent), skip them and run them yourself afterwards:"
   echo "    HOMEBREW_BUNDLE_CASK_SKIP=\"${password_casks# }\" ./install.sh --extras"
+  if [[ -n "$terminal_casks" ]]; then
+    # Plain `brew install --cask` refuses an app that's already there; brew bundle
+    # passes --adopt for you, so the manual command has to as well.
+    echo "  Then install those in your own terminal:"
+    echo "    brew install --cask --adopt${terminal_casks}"
+  fi
+  if [[ -n "$installer_casks" ]]; then
+    # e.g. expressvpn: its installer can't unquarantine the app it copies without
+    # App Management, and only reports "Failed to send install request to install helper".
+    echo "  These run a vendor installer:$installer_casks"
+    echo "    First allow your terminal app in System Settings > Privacy & Security > App Management,"
+    echo "    then quit and reopen it. Otherwise the installer fails partway and leaves a broken app behind."
+  fi
 fi
 exit 0

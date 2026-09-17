@@ -45,14 +45,22 @@ It also lists what's on the Mac but not in any Brewfile, and suggests the
 matching `cask` or `mas` line.
 
 Entries marked `[password]` ask for an admin password. That covers vendor
-installers, and also adopting most apps you installed by hand, because
-macOS doesn't let other programs modify those app bundles without admin
-rights. To install everything else unattended, skip them and install those
-in a terminal afterwards:
+installers and every app being adopted, because Homebrew may need `sudo` to
+fix the permissions of an app you installed by hand. To install everything
+else unattended, skip them. The audit prints both commands:
 
 ```sh
-HOMEBREW_BUNDLE_CASK_SKIP="expressvpn zoom netbird-ui" ./install.sh --extras
+HOMEBREW_BUNDLE_CASK_SKIP="chatgpt expressvpn google-chrome" ./install.sh --extras
+brew install --cask --adopt chatgpt expressvpn google-chrome   # in your own terminal
 ```
+
+Keep `--adopt` in the second command. `brew bundle` adds it for you, but a
+plain `brew install --cask` refuses to install over an existing app.
+
+Vendor-installer casks such as `expressvpn` also need your terminal app
+allowed in System Settings > Privacy & Security > App Management. Without
+that, the installer fails partway with "Failed to send install request to
+install helper" and leaves a broken, root-owned app in `/Applications`.
 
 Adopting is safe: an app is only taken over if it updates itself or its
 version matches exactly, and settings in `~/Library` aren't touched. Never
