@@ -12,19 +12,27 @@ this machine" or "sync my dotfiles", follow these steps.
    installing it, because the installer needs sudo and asks questions.
 3. Run `./install.sh --dry-run` and show the user what would be backed up or
    linked.
-4. Run `./install.sh --brew`. Use `--extras` only if the user wants the apps.
+4. Run `./install.sh --audit` and show the user the summary. It's
+   read-only.
+   - Rows marked `mismatch` or `app-store` would fail. Ask the user before
+     deleting or updating any app to fix them, and don't use `--force`.
+   - You can't type a password, so rows marked `[password]` would fail or
+     hang. Skip them with the `HOMEBREW_BUNDLE_CASK_SKIP="…"` line the audit
+     prints, and give the user the matching `brew install --cask …` command
+     to run in their own terminal.
+5. Run `./install.sh --brew`. Use `--extras` only if the user wants the apps.
    Don't install Brewfile.extras without asking.
-5. Verify:
+6. Verify:
    - `zsh -i -c exit` runs with no errors
    - `readlink ~/.zshrc` points into `~/.dotfiles/home/`
    - `starship --version`, `eza --version` and `bat --version` all work
-6. Ask the user whether this machine needs a different git email. If it does,
+7. Ask the user whether this machine needs a different git email. If it does,
    write it to `~/.gitconfig.local`, not to the tracked `.gitconfig`:
    ```
    [user]
        email = someone@example.com
    ```
-7. Tell the user to open a new terminal or run `exec zsh`. For Ghostty
+8. Tell the user to open a new terminal or run `exec zsh`. For Ghostty
    changes, reload with cmd+shift+,.
 
 ## Sync changes

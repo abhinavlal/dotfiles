@@ -21,15 +21,21 @@ usage() {
 Usage: ./install.sh [options]
 
   -n, --dry-run   show what would change, touch nothing
+      --audit     report how this Mac's apps line up with the Brewfiles, then exit
       --brew      also run 'brew bundle' on Brewfile (core CLI tools)
       --extras    also run 'brew bundle' on Brewfile.extras (apps; implies --brew)
   -h, --help      show this help
+
+brew bundle never upgrades what is already installed here, and adopts apps
+that were installed by hand. To skip casks that ask for an admin password:
+  HOMEBREW_BUNDLE_CASK_SKIP="zoom expressvpn" ./install.sh --extras
 EOF
 }
 
 for arg in "$@"; do
   case "$arg" in
     -n|--dry-run) DRY_RUN=1 ;;
+    --audit)      exec "$DOTFILES/scripts/audit.sh" ;;
     --brew)       WITH_BREW=1 ;;
     --extras)     WITH_BREW=1; WITH_EXTRAS=1 ;;
     -h|--help)    usage; exit 0 ;;
@@ -50,11 +56,12 @@ if (( WITH_BREW )); then
     echo "install.sh: Homebrew not found — install it from https://brew.sh first" >&2
     exit 1
   fi
+  # --no-upgrade: installing dotfiles shouldn't upgrade tools as a side effect.
   echo "brew    Brewfile"
-  run brew bundle --file="$DOTFILES/Brewfile"
+  run brew bundle install --no-upgrade --file="$DOTFILES/Brewfile"
   if (( WITH_EXTRAS )); then
     echo "brew    Brewfile.extras"
-    run brew bundle --file="$DOTFILES/Brewfile.extras"
+    run brew bundle install --no-upgrade --file="$DOTFILES/Brewfile.extras"
   fi
 fi
 
