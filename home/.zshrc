@@ -226,6 +226,13 @@ if command -v pyenv &>/dev/null; then
   eval "$(pyenv init - zsh)"
 fi
 
+# bun: installed by Homebrew (completions come from brew's site-functions).
+# `bun add -g` puts tools in ~/.bun/bin, appended so it never shadows brew's bun.
+if command -v bun &>/dev/null; then
+  export BUN_INSTALL="$HOME/.bun"
+  path+=("$BUN_INSTALL/bin")
+fi
+
 # bat theme
 export BAT_THEME="Catppuccin Mocha"
 

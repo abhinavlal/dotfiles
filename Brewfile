@@ -19,6 +19,7 @@ brew "uv"                        # py / pt aliases
 brew "nvm"                       # node versions    (.zshrc; .nvmrc)
 brew "pyenv"                     # python versions  (.zshrc; .python-version)
 brew "xz"                        # lzma for pyenv-built pythons
+brew "bun"                       # JS runtime + package manager (.zshrc)
 
 # Terminal
 cask "ghostty"                           # .config/ghostty/config
