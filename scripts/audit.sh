@@ -9,6 +9,7 @@
 #   mismatch   app exists but its version differs; install fails, app left alone
 #   app-store  an App Store copy exists; adopting it would give it two updaters
 #   installer  installed by hand via a vendor .pkg/installer; brew re-runs it
+#   untrusted  from a third-party tap Homebrew hasn't been told to trust; it gets ignored
 # Anything marked "password" asks for an admin password, so it can't run
 # unattended (e.g. from an agent without a terminal).
 #
@@ -64,6 +65,16 @@ pkg_apps() {
     pkgutil --pkg-info "$id" 2>/dev/null | sed -nE 's#^location: /?(Applications/[^/]+\.app)/?$#/\1#p'
     pkgutil --files "$id" 2>/dev/null | sed -nE 's#^Applications/([^/]+\.app)$#/Applications/\1#p'
   done
+}
+
+# Homebrew ignores casks from third-party taps until they're trusted, either via
+# `trusted: true` on the Brewfile line (brew bundle trusts it on install) or `brew trust`.
+trust_json="$(brew trust --json=v1 2>/dev/null || echo '{}')"
+tap_cask_trusted() {
+  local cask="$1"
+  grep -Eq "^[[:space:]]*cask \"$cask\".*trusted:[[:space:]]*true" "${BREWFILES[@]}" && return 0
+  jq -e --arg cask "$cask" --arg tap "${cask%/*}" \
+    'any((.taps // [])[]; . == $tap) or any((.casks // [])[]; . == $cask)' <<< "$trust_json" >/dev/null
 }
 
 # Third-party tap casks can run sudo in postflight blocks the JSON doesn't show,
@@ -129,7 +140,17 @@ while IFS='|' read -r token installed auto_updates version kind sudo apps pkgs d
     done
   fi
 
-  if [[ -z "$present" ]]; then
+  # Adopting runs chmod on the existing app, with sudo when the bundle isn't
+  # writable — which macOS enforces for apps installed by other means even
+  # when you own the files. Same check Homebrew makes (File#writable?).
+  if [[ -n "$present" && -d "$present" && ! -w "$present" && "$kind" == app ]]; then
+    pw=" [password]"
+  fi
+
+  if [[ -z "$present" && "$token" == */*/* ]] && ! tap_cask_trusted "$token"; then
+    row "untrusted" "$name" "tap ${token%/*} isn't trusted, so Homebrew ignores it — add trusted: true to its Brewfile line$pw"
+    n_problem=$((n_problem + 1))
+  elif [[ -z "$present" ]]; then
     row "new" "$name" "${pw# }"
     n_new=$((n_new + 1))
   elif [[ "$kind" == pkg || "$kind" == installer ]]; then
@@ -156,13 +177,18 @@ done < <(cask_rows ${queryable[@]+"${queryable[@]}"})
 
 for cask in ${untapped[@]+"${untapped[@]}"}; do
   name="${cask##*/}"
+  pw=""
   if tap_cask_uses_sudo "${cask%/*}" "$name"; then
-    row "new" "$name" "[password] from tap ${cask%/*}"
+    pw=" [password]"
     n_password=$((n_password + 1)); password_casks="$password_casks $name"
-  else
-    row "new" "$name" "from tap ${cask%/*}"
   fi
-  n_new=$((n_new + 1))
+  if tap_cask_trusted "$cask"; then
+    row "new" "$name" "from tap ${cask%/*}$pw"
+    n_new=$((n_new + 1))
+  else
+    row "untrusted" "$name" "tap ${cask%/*} isn't trusted, so Homebrew ignores it — add trusted: true to its Brewfile line$pw"
+    n_problem=$((n_problem + 1))
+  fi
 done
 
 # ── Mac App Store ─────────────────────────────────────────────────────────────
@@ -276,7 +302,7 @@ done
 section "Summary"
 echo "  $n_brew already in Homebrew, $n_adopt to adopt, $n_new to install, $n_problem to fix first, $untracked not in any Brewfile."
 if (( n_problem )); then
-  echo "  Fix the mismatch/app-store rows before running ./install.sh --extras; those installs would fail."
+  echo "  Fix the mismatch/app-store/untrusted rows before running ./install.sh --extras; those installs would fail."
 fi
 if (( n_password )); then
   echo "  Asks for an admin password:$password_casks"

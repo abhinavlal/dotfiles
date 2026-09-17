@@ -15,6 +15,7 @@ STAMP="$(date +%Y%m%d-%H%M%S)"
 DRY_RUN=0
 WITH_BREW=0
 WITH_EXTRAS=0
+brew_failed=""
 
 usage() {
   cat <<EOF
@@ -57,12 +58,13 @@ if (( WITH_BREW )); then
     exit 1
   fi
   # --no-upgrade: installing dotfiles shouldn't upgrade tools as a side effect.
-  echo "brew    Brewfile"
-  run brew bundle install --no-upgrade --file="$DOTFILES/Brewfile"
-  if (( WITH_EXTRAS )); then
-    echo "brew    Brewfile.extras"
-    run brew bundle install --no-upgrade --file="$DOTFILES/Brewfile.extras"
-  fi
+  # A failed entry doesn't stop the config links below; it's reported at the end.
+  brewfiles=(Brewfile)
+  (( WITH_EXTRAS )) && brewfiles+=(Brewfile.extras)
+  for brewfile in "${brewfiles[@]}"; do
+    echo "brew    $brewfile"
+    run brew bundle install --no-upgrade --file="$DOTFILES/$brewfile" || brew_failed="$brew_failed $brewfile"
+  done
 fi
 
 # ── Links ─────────────────────────────────────────────────────────────────────
@@ -96,4 +98,8 @@ echo
 (( DRY_RUN )) && echo "Dry run — nothing changed."
 echo "$linked linked, $unchanged already linked, $backed_up backed up."
 (( linked )) && ! (( DRY_RUN )) && echo "Open a new shell (or run: exec zsh) to pick up changes."
+if [[ -n "$brew_failed" ]]; then
+  echo "brew bundle reported failures in:$brew_failed — see the output above, or run ./install.sh --audit." >&2
+  exit 1
+fi
 exit 0

@@ -32,13 +32,16 @@ what `brew bundle` will do:
 | `mismatch`  | installed by hand, but the version differs; the install would fail and leave the app alone. Update the app or delete it first. |
 | `app-store` | an App Store copy exists; use a `mas` entry instead, or delete it first |
 | `installer` | installed by hand with a vendor installer; Homebrew runs the installer again over it |
+| `untrusted` | from a third-party tap that Homebrew 7 ignores until it's trusted; add `trusted: true` to that Brewfile line |
 
 It also lists what's on the Mac but not in any Brewfile, and suggests the
 matching `cask` or `mas` line.
 
-Entries marked `[password]` ask for an admin password. To install
-everything else unattended, skip them and install those in a terminal
-afterwards:
+Entries marked `[password]` ask for an admin password. That covers vendor
+installers, and also adopting most apps you installed by hand, because
+macOS doesn't let other programs modify those app bundles without admin
+rights. To install everything else unattended, skip them and install those
+in a terminal afterwards:
 
 ```sh
 HOMEBREW_BUNDLE_CASK_SKIP="expressvpn zoom netbird-ui" ./install.sh --extras
