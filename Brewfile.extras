@@ -26,7 +26,7 @@ cask "orbstack"
 cask "raycast"
 cask "rectangle"
 cask "slack"
-cask "t3-code"
+cask "t3-code@nightly"             # nightly build; settings live in ~/.t3/userdata
 cask "tailscale-app"
 cask "warp"                        # Warp terminal
 cask "wispr-flow"
