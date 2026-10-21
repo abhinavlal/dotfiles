@@ -102,6 +102,16 @@ autoload -Uz edit-command-line
 zle -N edit-command-line
 bindkey '^X^E' edit-command-line
 
+# ── Terminal reset ────────────────────────────────────────────────────────────
+# A TUI that crashes or is killed (claude, codex, vim, htop…) can leave mouse
+# tracking on, so scrolling at the prompt prints junk like ^[[<65;40;12M in
+# Ghostty/iTerm/Warp. Switch mouse + focus reporting off before every prompt.
+_reset_mouse_tracking() {
+  [[ -t 1 ]] && print -n '\e[?9l\e[?1000l\e[?1001l\e[?1002l\e[?1003l\e[?1004l\e[?1005l\e[?1006l\e[?1015l\e[?1016l'
+}
+autoload -Uz add-zsh-hook
+add-zsh-hook precmd _reset_mouse_tracking
+
 # ── Aliases ───────────────────────────────────────────────────────────────────
 # Listing (eza) — guarded so a fresh machine without eza keeps a working `ls`.
 if command -v eza &>/dev/null; then
